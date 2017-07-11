@@ -35,10 +35,13 @@ let set g_grid x y value =
   g_grid.grid.(y).(x) <- value
 
 let get_neighbor_bounds x y grid =
-  { top   = if y > 0 then y - 1 else grid.height - 1
-  ; left  = if x > 0 then x - 1 else grid.width  - 1
-  ; down  = if y < (grid.height - 1) then y + 1 else 0
-  ; right = if x < (grid.width  - 1) then x + 1 else 0
+  let bound_height = grid.height - 1 in
+  let bound_width = grid.width - 1 in
+
+  { top   = if y > 0 then y - 1 else bound_height
+  ; left  = if x > 0 then x - 1 else bound_width
+  ; down  = if y < bound_height then y + 1 else 0
+  ; right = if x < bound_width  then x + 1 else 0
   }
 
 let get_neighbors x y grid =
@@ -77,10 +80,9 @@ let check_life grid x y =
   let numLiving = count_living x y grid in
 
   if living && (numLiving < 2 || numLiving > 3)
-  then false
-  else
-  if not living && numLiving = 3
-  then true
+    then false
+  else if not living && numLiving = 3
+    then true
   else living
 
 let clear grid =
