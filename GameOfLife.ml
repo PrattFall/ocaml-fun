@@ -1,7 +1,20 @@
+(*
+ * Conway's Game of Life in OCaml
+ * ---
+ * Arrays used for update performance
+ * NOT a pure module due to updating the state of the arrays in place
+ *)
+
 type t = { width  : int
          ; height : int
          ; grid   : bool array array
          }
+
+type neighborhood = { top : int
+                    ; right : int
+                    ; down : int
+                    ; left : int
+                    }
 
 let (%) f1 f2 a = f1 (f2 a)
 
@@ -10,9 +23,9 @@ let make width height =
     Array.init height (fun _ -> Array.make width false)
   in
 
-  { width = width
+  { width  = width
   ; height = height
-  ; grid = make_grid
+  ; grid   = make_grid
   }
 
 let get x y g_grid =
@@ -21,30 +34,35 @@ let get x y g_grid =
 let set g_grid x y value =
   g_grid.grid.(y).(x) <- value
 
-let count_living x y grid =
-  let y_up    = if y > 0 then y - 1 else grid.height - 1 in
-  let x_left  = if x > 0 then x - 1 else grid.width  - 1 in
-  let y_down  = if y < (grid.height - 1) then y + 1 else 0 in
-  let x_right = if x < (grid.width  - 1) then x + 1 else 0 in
+let get_neighbor_bounds x y grid =
+  { top   = if y > 0 then y - 1 else grid.height - 1
+  ; left  = if x > 0 then x - 1 else grid.width  - 1
+  ; down  = if y < (grid.height - 1) then y + 1 else 0
+  ; right = if x < (grid.width  - 1) then x + 1 else 0
+  }
 
-  let checks =
-    [
-      get x_left  y_up   grid;
-      get x_left  y      grid;
-      get x_left  y_down grid;
-      get x       y_up   grid;
-      get x       y_down grid;
-      get x_right y_up   grid;
-      get x_right y      grid;
-      get x_right y_down grid;
-    ]
-  in
+let get_neighbors x y grid =
+  let n = get_neighbor_bounds x y grid in
+
+  [
+    get n.left  n.top  grid;
+    get n.left  y      grid;
+    get n.left  n.down grid;
+    get x       n.top  grid;
+    get x       n.down grid;
+    get n.right n.top  grid;
+    get n.right y      grid;
+    get n.right n.down grid;
+  ]
+
+let count_living x y grid =
 
   let add_if_alive acc x =
     if x then acc + 1 else acc
   in
 
-  List.fold_left add_if_alive 0 checks
+  get_neighbors x y grid
+  |> List.fold_left add_if_alive 0
 
 let map f grid =
   Array.map (fun y -> Array.map (fun x -> f x) y) grid
@@ -61,9 +79,9 @@ let check_life grid x y =
   if living && (numLiving < 2 || numLiving > 3)
   then false
   else
-    if not living && numLiving = 3
-    then true
-    else living
+  if not living && numLiving = 3
+  then true
+  else living
 
 let clear grid =
   { grid with grid = map (fun _ -> false) grid.grid }
@@ -91,18 +109,3 @@ let string_of_grid grid =
   |> string_concat "\n"
 
 let print_grid = print_endline % string_of_grid
-
-let () =
-  let grid = make 11 11 in
-
-  set grid 3 0 true;
-  set grid 2 1 true;
-  set grid 2 2 true;
-  set grid 3 3 true;
-  set grid 4 1 true;
-  set grid 4 2 true;
-  set grid 3 4 true;
-
-  update grid;
-
-  print_grid grid
