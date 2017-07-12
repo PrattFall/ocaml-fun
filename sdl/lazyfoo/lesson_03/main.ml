@@ -1,6 +1,5 @@
 open Result
 open Tsdl
-open Ctypes
 
 type sdl_err =
   | InitError             of string
