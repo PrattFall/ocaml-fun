@@ -87,9 +87,7 @@ let () =
     let window_surface = get_window_surface window in
     let surfaces = KeyPressSurfaces.load () in
 
-    let update_surface surface =
-      update_window_surface window window_surface surface
-    in
+    let update_surface = update_window_surface window window_surface in
 
     let e = Sdl.Event.create () in
 
@@ -107,7 +105,7 @@ let () =
           | `Right -> update_surface (KeyPressSurfaces.right   surfaces)
           | _      -> update_surface (KeyPressSurfaces.default surfaces));
         loop ()
-      | _     -> loop ()
+      | _ -> loop ()
     in
 
     update_surface (KeyPressSurfaces.default surfaces);
