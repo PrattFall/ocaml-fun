@@ -18,11 +18,6 @@ let show_error e =
   | GetWindowSurfaceError e -> show "Could not get window surface" e
   | ImageLoadFail e         -> show "Failed to load image" e
 
-let (>>=) x f =
-  match x with
-  | Ok y -> f y
-  | Error e -> Error e
-
 let init_video () =
   match Sdl.init Sdl.Init.video with
   | Error (`Msg e) -> raise (SDLException (InitError e))
