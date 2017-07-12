@@ -81,6 +81,10 @@ let update_window_surface window window_surface surface =
   Sdl.blit_surface surface None window_surface None |> ignore;
   Sdl.update_window_surface window |> ignore
 
+(* This is where I wish this library had some docs *)
+let key_enum e =
+  Sdl.Event.(Sdl.Scancode.enum (get e keyboard_scancode))
+
 let () =
   try
     let window = init_window () in
@@ -95,8 +99,7 @@ let () =
       match Sdl.Event.(enum (get e typ)) with
       | `Quit -> print_endline "Application terminated by user"
       | `Key_down ->
-        (* This is where I wish this library had some docs *)
-        (match Sdl.Event.(Sdl.Scancode.enum (get e keyboard_scancode)) with
+        (match key_enum e with
           | `Up    -> update_surface (KeyPressSurfaces.up      surfaces)
           | `Down  -> update_surface (KeyPressSurfaces.down    surfaces)
           | `Left  -> update_surface (KeyPressSurfaces.left    surfaces)
