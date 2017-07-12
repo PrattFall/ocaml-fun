@@ -46,7 +46,6 @@ let loadMedia () =
 
 let close window surfaces =
   List.iter Sdl.free_surface surfaces;
-
   Sdl.destroy_window window
 
 let wait_event e =
@@ -56,7 +55,6 @@ let wait_event e =
 
 let () =
   try
-    print_endline "Starting...";
     let window         = init_window () in
     let window_surface = get_window_surface window in
     let image_surface  = loadMedia () in
