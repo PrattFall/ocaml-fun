@@ -83,12 +83,10 @@ let update_window_surface window window_surface surface =
 
 let () =
   try
-    let window         = init_window () in
+    let window = init_window () in
     let window_surface = get_window_surface window in
     let surfaces = KeyPressSurfaces.load () in
-
     let update_surface = update_window_surface window window_surface in
-
     let e = Sdl.Event.create () in
 
     let rec loop () =
