@@ -77,9 +77,9 @@ let update_window_surface window window_surface surface =
   ignore (Sdl.blit_scaled ~src:surface stretch
                           ~dst:window_surface (Some stretch));
 
-  Sdl.update_window_surface window |> ignore
+  ignore (Sdl.update_window_surface window)
 
-let get_surface_format surface =
+let surface_format surface =
   match Sdl.alloc_format (Sdl.get_surface_format_enum surface) with
   | Error (`Msg e) -> raise (SDLException (CouldNotAllocate e))
   | Ok format -> format
@@ -88,9 +88,7 @@ let () =
   try
     let window = init_window () in
     let window_surface = get_window_surface window in
-    let surface =
-      load_surface (get_surface_format window_surface) "loaded.png"
-    in
+    let surface = load_surface (surface_format window_surface) "loaded.png" in
     let update_surface = update_window_surface window window_surface in
 
     update_surface surface;
