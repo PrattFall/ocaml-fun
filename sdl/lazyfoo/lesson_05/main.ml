@@ -39,30 +39,6 @@ let load_surface window_surface path =
        Sdl.free_surface surface;
        optimized_surface)
 
-module KeyPressSurfaces = struct
-  type surface =
-    { default : Sdl.surface
-    ; up      : Sdl.surface
-    ; down    : Sdl.surface
-    ; left    : Sdl.surface
-    ; right   : Sdl.surface
-    }
-
-  let load ws () =
-    { default = load_surface ws "press.bmp"
-    ; up      = load_surface ws "up.bmp"
-    ; down    = load_surface ws "down.bmp"
-    ; left    = load_surface ws "left.bmp"
-    ; right   = load_surface ws "right.bmp"
-    }
-
-  let default s = s.default
-  let up      s = s.up
-  let down    s = s.down
-  let left    s = s.left
-  let right   s = s.right
-end
-
 let init_video () =
   match Sdl.init Sdl.Init.video with
   | Error (`Msg e) -> raise (SDLException (InitError e))
