@@ -8,6 +8,8 @@ type sdl_err =
   | ImageLoadFail         of string
   | CouldNotWait          of string
 
+exception SDLException of sdl_err
+
 let show_error e =
   let show s e = print_endline (s ^ ": " ^ e) in
 
@@ -17,8 +19,6 @@ let show_error e =
   | GetWindowSurfaceError e -> show "Could not get window surface" e
   | ImageLoadFail e         -> show "Failed to load image" e
   | CouldNotWait e          -> show "Could not wait" e
-
-exception SDLException of sdl_err
 
 let load_surface path =
   match Sdl.load_bmp path with
