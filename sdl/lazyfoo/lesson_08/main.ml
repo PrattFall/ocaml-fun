@@ -34,11 +34,6 @@ let show_error e =
   | CouldNotAllocate e        -> show "Could not allocate" e
   | CouldNotLoadTexture e     -> show "Could not load texture" e
 
-let load_initial_surface path =
-  match Image.load path with
-  | Error (`Msg e) -> raise (SDLException (ImageLoadFail e))
-  | Ok surface     -> surface
-
 let init_video () =
   match Sdl.init Sdl.Init.video with
   | Error (`Msg e) -> raise (SDLException (InitError e))
@@ -54,10 +49,6 @@ let get_renderer w =
   | Error (`Msg e) -> raise (SDLException (CreateRendererError e))
   | Ok r -> r
 
-let init_window () =
-  init_video ();
-  get_window ()
-
 let close window renderer textures =
   List.iter Sdl.destroy_texture textures;
   Sdl.destroy_renderer renderer;
@@ -71,32 +62,56 @@ let wait_event e =
 let get_event_type e =
   Sdl.Event.(enum (get e typ))
 
-let load_texture renderer path =
-  let loaded_surface = load_initial_surface path in
-  match Sdl.create_texture_from_surface renderer loaded_surface with
-  | Error (`Msg e) -> raise (SDLException (CouldNotLoadTexture e))
-  | Ok texture ->
-    Sdl.free_surface loaded_surface;
-    texture
-
-let get_surface_format surface =
-  match Sdl.alloc_format (Sdl.get_surface_format_enum surface) with
-  | Error (`Msg e) -> raise (SDLException (CouldNotAllocate e))
-  | Ok format -> format
-
 let () =
   try
-    let window = init_window () in
+    init_video ();
+    let window = get_window () in
     let renderer = get_renderer window in
-    let texture = load_texture renderer "loaded.png" in
-
-    ignore (Sdl.set_render_draw_color renderer 255 255 255 255);
 
     let e = Sdl.Event.create () in
 
     let do_things () =
+      ignore (Sdl.set_render_draw_color renderer 0xFF 0xFF 0xFF 0xFF);
       ignore (Sdl.render_clear renderer);
-      ignore (Sdl.render_copy renderer texture);
+
+      (* Render red filled quad *)
+      let fill_rect =
+        Sdl.Rect.create
+          ~x:(Screen.width / 4)
+          ~y:(Screen.height / 4)
+          ~w:(Screen.width / 2)
+          ~h:(Screen.height / 2)
+      in
+      ignore (Sdl.set_render_draw_color renderer 0xFF 0x00 0x00 0xFF);
+      ignore (Sdl.render_fill_rect renderer (Some fill_rect));
+
+      (* Render green outlined quad *)
+      let outline_rect =
+        Sdl.Rect.create
+          ~x:(Screen.width / 6)
+          ~y:(Screen.height / 6)
+          ~w:(Screen.width * 2/ 3)
+          ~h:(Screen.height * 2 / 3)
+      in
+      ignore (Sdl.set_render_draw_color renderer 0x00 0xFF 0x00 0xFF);
+      ignore (Sdl.render_draw_rect renderer (Some outline_rect));
+
+      (* Draw blue horizontal line *)
+      ignore (Sdl.set_render_draw_color renderer 0x00 0x00 0xFF 0xFF);
+      ignore (Sdl.render_draw_line renderer 0 (Screen.height / 2) Screen.width (Screen.height / 2));
+
+      (* Draw vertical line of yellow dots *)
+      ignore (Sdl.set_render_draw_color renderer 0xFF 0xFF 0x00 0xFF);
+      let rec loop_dot x =
+        ignore (Sdl.render_draw_point renderer (Screen.width / 2) x);
+
+        if x < Screen.height
+        then loop_dot (x + 4)
+        else ();
+      in
+
+      loop_dot 0;
+
       ignore (Sdl.render_present renderer)
     in
 
@@ -104,13 +119,13 @@ let () =
       wait_event (Some e);
 
       match get_event_type e with
-      | `Quit -> print_endline "Application terminated by user"
+      | `Quit -> ()
       | _     -> do_things (); loop ()
     in
 
     loop ();
 
-    close window renderer [ texture ];
+    close window renderer [ ];
     Image.quit ();
     Sdl.quit ();
     exit 0
