@@ -99,7 +99,9 @@ let load_initial_surface path =
 let load_texture renderer path =
   let loaded_surface = load_initial_surface path in
   match Sdl.create_texture_from_surface renderer loaded_surface with
-  | Error (`Msg e) -> raise (SDLException (CouldNotLoadTexture e))
+  | Error (`Msg e) ->
+    Sdl.free_surface loaded_surface;
+    raise (SDLException (CouldNotLoadTexture e))
   | Ok texture ->
     Sdl.free_surface loaded_surface;
     texture
